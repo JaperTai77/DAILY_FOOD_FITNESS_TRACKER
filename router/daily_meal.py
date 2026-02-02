@@ -56,3 +56,9 @@ async def calculate_daily_nutrition(date: datetime.date):
     daily_meal = DailyMealRepository()
     nutrition_summary = daily_meal.calulate_daily_nutrition(meal_date=date)
     return JSONResponse(content=jsonable_encoder({"nutrition_summary": nutrition_summary}))
+
+@router.get("/getmealsbydate/{date}")
+async def get_meals_by_date(date: datetime.date):
+    daily_meal = DailyMealRepository()
+    meals = daily_meal.get_meals_by_date(meal_date=date)
+    return JSONResponse(content=jsonable_encoder({"meals": meals}))

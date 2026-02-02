@@ -14,10 +14,56 @@ function updateDateTime() {
     document.getElementById('datetime').textContent = dateTimeString;
 }
 
+// Global variable to track selected nutrition goal
+let selectedNutritionGoal = 'RESTDAY';
+let currentNutritionGoal = NUTRITION_GOALS_RESTDAY;
+// Last fetched meals for fitness tab (used for CSV export)
+let lastFetchedMeals = [];
+
+// Select nutrition goal
+function selectNutritionGoal(goalType, btn) {
+    selectedNutritionGoal = goalType;
+
+    // Update the current nutrition goal based on selection
+    switch(goalType) {
+        case 'RESTDAY':
+            currentNutritionGoal = NUTRITION_GOALS_RESTDAY;
+            break;
+        case 'LEGDAY':
+            currentNutritionGoal = NUTRITION_GOALS_LEGDAY;
+            break;
+        case 'UPPERBODYDAY':
+            currentNutritionGoal = NUTRITION_GOALS_UPPERBODYDAY;
+            break;
+        case 'UPPERBODYINTENSEDAY':
+            currentNutritionGoal = NUTRITION_GOALS_UPPERBODYINTENSEDAY;
+            break;
+        case 'RUNNINGDAY':
+            currentNutritionGoal = NUTRITION_GOALS_RUNNINGDAY;
+            break;
+        default:
+            currentNutritionGoal = NUTRITION_GOALS_RESTDAY;
+    }
+
+    // Update button styles
+    const buttons = document.querySelectorAll('.goal-button');
+    buttons.forEach(button => button.classList.remove('active'));
+
+    if (btn && btn.classList) {
+        btn.classList.add('active');
+    } else {
+        // fallback: find by data-goal
+        const found = Array.from(buttons).find(b => b.getAttribute('data-goal') === goalType);
+        if (found) found.classList.add('active');
+    }
+}
+
 // Switch between main tabs (Meal Tracker / Fitness Tracker)
 function switchTab(tabName) {
-    const tabButtons = document.querySelectorAll('.tracker-box:first-of-type .tab-button');
-    const tabPanes = document.querySelectorAll('.tracker-box:first-of-type .tab-pane');
+    // Get the first tracker-box (main tabs container)
+    const trackerBox = document.querySelector('.tracker-box');
+    const tabButtons = trackerBox.querySelectorAll('.tab-button');
+    const tabPanes = trackerBox.querySelectorAll('.tab-pane');
     
     tabButtons.forEach(button => button.classList.remove('active'));
     tabPanes.forEach(pane => pane.classList.remove('active'));
@@ -255,6 +301,44 @@ document.getElementById('nutrition-date-form').addEventListener('submit', async 
     }
 });
 
+// Handle Fitness Date Form Submission
+document.getElementById('fitness-date-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const submitBtn = e.target.querySelector('.btn-load');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Loading...';
+
+    const dateInput = document.getElementById('fitness-date').value;
+    const localDate = new Date(dateInput + 'T00:00:00');
+    const gmtDate = new Date(localDate.getTime() + localDate.getTimezoneOffset() * 60000);
+    const gmtDateString = gmtDate.toISOString().split('T')[0];
+
+    try {
+        const response = await fetch(`${CONFIG.BACKEND_URL}/dailymeal/getmealsbydate/${gmtDateString}`, {
+            method: 'GET',
+            headers: { 'accept': 'application/json' }
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.meals) {
+            lastFetchedMeals = result.meals;
+            displayMealsTable(result.meals);
+            // show download button when meals exist
+            const dl = document.getElementById('download-csv-btn');
+            if (dl) dl.style.display = (result.meals && result.meals.length) ? 'inline-block' : 'none';
+        } else {
+            document.getElementById('fitness-display').innerHTML = `<p class="no-data">Failed to load meals. Status: ${response.status}</p>`;
+        }
+    } catch (error) {
+        console.error('Error fetching meals:', error);
+        document.getElementById('fitness-display').innerHTML = `<p class="no-data">Error: ${error.message}</p>`;
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Load';
+    }
+});
+
 // Display nutrition data
 function displayNutritionData(data) {
     const displayEl = document.getElementById('nutrition-display');
@@ -263,7 +347,7 @@ function displayNutritionData(data) {
         'TotalCalories': 'calories',
         'TotalProtein': 'protein',
         'TotalFat': 'fat',
-        'TotalTransFat': 'transFat',
+        'TotalTransFat': 'SatFat',
         'TotalSodium': 'sodium',
         'TotalCarbs': 'carbs',
         'TotalSugar': 'sugar',
@@ -274,7 +358,7 @@ function displayNutritionData(data) {
     
     for (const [apiKey, goalKey] of Object.entries(nutritionMapping)) {
         const value = data[apiKey] || 0;
-        const goal = NUTRITION_GOALS[goalKey];
+        const goal = currentNutritionGoal[goalKey];
         
         if (!goal) continue;
         
@@ -308,13 +392,84 @@ function displayNutritionData(data) {
     displayEl.innerHTML = html;
 }
 
+// Render meals table for fitness tab
+function displayMealsTable(meals) {
+    const displayEl = document.getElementById('fitness-display');
+    if (!meals || meals.length === 0) {
+        displayEl.innerHTML = '<p class="no-data">No meals found for this date.</p>';
+        return;
+    }
+
+    let html = '<div class="meals-table-wrap"><table class="meals-table"><thead><tr>' +
+        '<th>Time</th><th>Item</th><th>Serving (g)</th><th>Calories</th><th>Protein</th><th>Fat</th><th>Sat Fat</th><th>Sodium</th><th>Carbs</th><th>Sugar</th><th>Added Sugar</th></tr></thead><tbody>';
+
+    meals.forEach(m => {
+        const dt = m.MealDateTime || '';
+        html += `<tr>
+            <td>${dt}</td>
+            <td>${m.ItemName || ''}</td>
+            <td>${m.ServingGrams ?? 0}</td>
+            <td>${m.Calories ?? 0}</td>
+            <td>${m.Protein ?? 0}</td>
+            <td>${m.Fat ?? 0}</td>
+            <td>${m.SatFat ?? 0}</td>
+            <td>${m.Sodium ?? 0}</td>
+            <td>${m.Carbs ?? 0}</td>
+            <td>${m.Sugar ?? 0}</td>
+            <td>${m.AddedSugar ?? 0}</td>
+        </tr>`;
+    });
+
+    html += '</tbody></table></div>';
+    displayEl.innerHTML = html;
+}
+
+// Download last fetched meals as CSV
+function downloadMealsCSV() {
+    if (!lastFetchedMeals || lastFetchedMeals.length === 0) {
+        alert('No meals to download.');
+        return;
+    }
+
+    const headers = ['MealDateTime','ItemName','ServingGrams','Calories','Protein','Fat','SatFat','Sodium','Carbs','Sugar','AddedSugar','Description'];
+
+    const escapeCell = (val) => {
+        if (val === null || val === undefined) return '';
+        const s = String(val);
+        if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+            return '"' + s.replace(/"/g, '""') + '"';
+        }
+        return s;
+    };
+
+    let csv = headers.join(',') + '\n';
+    lastFetchedMeals.forEach(row => {
+        const line = headers.map(h => escapeCell(row[h] ?? '')).join(',');
+        csv += line + '\n';
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const datePart = (document.getElementById('fitness-date') && document.getElementById('fitness-date').value) || '';
+    a.download = `meals_${datePart || 'export'}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
 // Set today's date as default
 function setTodayDate() {
     const today = new Date();
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const day = String(today.getDate()).padStart(2, '0');
-    document.getElementById('nutrition-date').value = `${year}-${month}-${day}`;
+    const dateString = `${year}-${month}-${day}`;
+    document.getElementById('nutrition-date').value = dateString;
+    const fitnessInput = document.getElementById('fitness-date');
+    if (fitnessInput) fitnessInput.value = dateString;
 }
 
 // Initialize

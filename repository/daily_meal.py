@@ -113,7 +113,7 @@ class DailyMealRepository:
                 SUM(Sugar) AS TotalSugar,
                 SUM(AddedSugar) AS TotalAddedSugar
             FROM [dbo].[DailyMealItem]
-            WHERE CAST(MealDateTime AS DATE) = :meal_date
+            WHERE MealDateTime = :meal_date
         """)
         try:
             with self.engine.connect() as conn:
@@ -130,3 +130,37 @@ class DailyMealRepository:
         except Exception as e:
             print(f"Failed to calculate daily nutrition for {meal_date}: {e}")
             return None
+        
+    def get_meals_by_date(self, meal_date) -> list:
+        sql_query = text("""
+            SELECT
+                MealDateTime,
+                ItemName,
+                ServingGrams,
+                Calories,
+                Protein,
+                Fat,
+                SatFat,
+                Sodium,
+                Carbs,
+                Sugar,
+                AddedSugar,
+                Description
+            FROM [dbo].[DailyMealItem]
+            WHERE MealDateTime = :meal_date
+            ORDER BY MealDateTime ASC
+        """)
+        try:
+            with self.engine.connect() as conn:
+                result = conn.execute(sql_query, {"meal_date": meal_date})
+                meals = []
+                for row in result:
+                    meal = dict(row._mapping)
+                    for k, v in meal.items():
+                        if isinstance(v, decimal.Decimal):
+                            meal[k] = float(v)
+                    meals.append(meal)
+                return meals
+        except Exception as e:
+            print(f"Failed to get meals for {meal_date}: {e}")
+            return []

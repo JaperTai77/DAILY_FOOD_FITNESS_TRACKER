@@ -25,6 +25,16 @@
             <div class="tab-content">
                 <div id="meal-tab" class="tab-pane active">
                     <div class="nutrition-tracker">
+                        <div class="nutrition-goal-selector">
+                            <h4>Select Nutrition Goal</h4>
+                            <div class="goal-buttons">
+                                <button type="button" class="goal-button active" data-goal="RESTDAY" onclick="selectNutritionGoal('RESTDAY', this)">Rest Day</button>
+                                <button type="button" class="goal-button" data-goal="LEGDAY" onclick="selectNutritionGoal('LEGDAY', this)">Leg Day</button>
+                                <button type="button" class="goal-button" data-goal="UPPERBODYDAY" onclick="selectNutritionGoal('UPPERBODYDAY', this)">Upper Body Day</button>
+                                <button type="button" class="goal-button" data-goal="UPPERBODYINTENSEDAY" onclick="selectNutritionGoal('UPPERBODYINTENSEDAY', this)">Upper Intense Day</button>
+                                <button type="button" class="goal-button" data-goal="RUNNINGDAY" onclick="selectNutritionGoal('RUNNINGDAY', this)">Running Day</button>
+                            </div>
+                        </div>
                         <h3>Daily Nutrition Summary</h3>
                         <form id="nutrition-date-form" class="date-selector">
                             <input type="date" id="nutrition-date" required>
@@ -39,8 +49,21 @@
                 
                 <div id="fitness-tab" class="tab-pane">
                     <div class="content-area">
-                        <h2>Fitness Tracker</h2>
-                        <p>Track your fitness activities and progress here.</p>
+                        <h2>Daily Food Intake</h2>
+                        <p class="muted">Load meals for a specific date to view items you consumed.</p>
+
+                        <form id="fitness-date-form" class="date-selector">
+                            <input type="date" id="fitness-date" required>
+                            <button type="submit" class="btn-load">Load</button>
+                        </form>
+
+                        <div class="fitness-actions" style="margin-top:10px;">
+                            <button id="download-csv-btn" class="btn-download" style="display:none;" onclick="downloadMealsCSV()">Download CSV</button>
+                        </div>
+
+                        <div id="fitness-display" class="nutrition-display">
+                            <p class="no-data">Select a date to view meals</p>
+                        </div>
                     </div>
                 </div>
             </div>
