@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="config.js"></script>
+    <script src="nutrition-goals.js"></script>
+    <title>Daily Food & Fitness Tracker</title>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Daily Food and Fitness Tracker</h1>
+            <br>
+            <div id="datetime" class="datetime"></div>
+        </div>
+        
+        <div class="tracker-box">
+            <div class="tabs">
+                <button class="tab-button active" onclick="switchTab('meal')">Daily Meal Tracker</button>
+                <button class="tab-button" onclick="switchTab('fitness')">Fitness Tracker</button>
+            </div>
+            
+            <div class="tab-content">
+                <div id="meal-tab" class="tab-pane active">
+                    <div class="nutrition-tracker">
+                        <h3>Daily Nutrition Summary</h3>
+                        <form id="nutrition-date-form" class="date-selector">
+                            <input type="date" id="nutrition-date" required>
+                            <button type="submit" class="btn-load">Load</button>
+                        </form>
+                        
+                        <div id="nutrition-display" class="nutrition-display">
+                            <p class="no-data">Select a date to view nutrition data</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="fitness-tab" class="tab-pane">
+                    <div class="content-area">
+                        <h2>Fitness Tracker</h2>
+                        <p>Track your fitness activities and progress here.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Add Food Box -->
+        <div class="tracker-box" style="margin-top: 30px;">
+            <div class="box-header">
+                <h2>Add Food Item</h2>
+            </div>
+            
+            <div class="tabs">
+                <button class="tab-button active" onclick="switchFoodTab('custom')">Add Custom Meal</button>
+                <button class="tab-button" onclick="switchFoodTab('catalog')">From Food Catalog</button>
+                <button class="tab-button" onclick="switchFoodTab('serving')">From Catalog (Per Serving)</button>
+            </div>
+            
+            <div class="tab-content">
+                <!-- Custom Meal Tab -->
+                <div id="custom-tab" class="tab-pane active">
+                    <form id="custom-form" class="food-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Item Name *</label>
+                                <input type="text" id="custom-itemname" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Serving (grams) *</label>
+                                <input type="number" id="custom-serving" step="0.01" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Calories</label>
+                                <input type="number" id="custom-calories" step="0.01" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Protein (g)</label>
+                                <input type="number" id="custom-protein" step="0.01" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Fat (g)</label>
+                                <input type="number" id="custom-fat" step="0.01" value="0">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Trans Fat (g)</label>
+                                <input type="number" id="custom-transfat" step="0.01" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Sodium (mg)</label>
+                                <input type="number" id="custom-sodium" step="0.01" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Carbs (g)</label>
+                                <input type="number" id="custom-carbs" step="0.01" value="0">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Sugar (g)</label>
+                                <input type="number" id="custom-sugar" step="0.01" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Added Sugar (g)</label>
+                                <input type="number" id="custom-addedsugar" step="0.01" value="0">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label>Description</label>
+                            <textarea id="custom-description" rows="2" placeholder="N/A"></textarea>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label>Date & Time *</label>
+                            <div class="datetime-input-group">
+                                <input type="datetime-local" id="custom-datetime" required>
+                                <button type="button" class="btn-now" onclick="setCurrentTime('custom-datetime')">Now</button>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn-submit">Submit</button>
+                        <div id="custom-message" class="message"></div>
+                    </form>
+                </div>
+                
+                <!-- Food Catalog Tab -->
+                <div id="catalog-tab" class="tab-pane">
+                    <form id="catalog-form" class="food-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Food ID *</label>
+                                <input type="number" id="catalog-foodid" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Serving (grams) *</label>
+                                <input type="number" id="catalog-serving" step="0.01" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label>Date & Time *</label>
+                            <div class="datetime-input-group">
+                                <input type="datetime-local" id="catalog-datetime" required>
+                                <button type="button" class="btn-now" onclick="setCurrentTime('catalog-datetime')">Now</button>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn-submit">Submit</button>
+                        <div id="catalog-message" class="message"></div>
+                    </form>
+                </div>
+                
+                <!-- Per Serving Tab -->
+                <div id="serving-tab" class="tab-pane">
+                    <form id="serving-form" class="food-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Food ID *</label>
+                                <input type="number" id="serving-foodid" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Serving Count *</label>
+                                <input type="number" id="serving-count" step="0.01" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label>Date & Time *</label>
+                            <div class="datetime-input-group">
+                                <input type="datetime-local" id="serving-datetime" required>
+                                <button type="button" class="btn-now" onclick="setCurrentTime('serving-datetime')">Now</button>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn-submit">Submit</button>
+                        <div id="serving-message" class="message"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
