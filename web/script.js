@@ -19,6 +19,8 @@ let selectedNutritionGoal = 'RESTDAY';
 let currentNutritionGoal = NUTRITION_GOALS_RESTDAY;
 // Last fetched meals for fitness tab (used for CSV export)
 let lastFetchedMeals = [];
+// Track if runs are added
+let runNutritionGoalsAdded = false;
 
 // Select nutrition goal
 function selectNutritionGoal(goalType, btn) {
@@ -45,8 +47,15 @@ function selectNutritionGoal(goalType, btn) {
             currentNutritionGoal = NUTRITION_GOALS_RESTDAY;
     }
 
+    // Reset run nutrition goals when switching
+    if (runNutritionGoalsAdded) {
+        runNutritionGoalsAdded = false;
+        const addRunBtn = document.querySelector('.goal-button.optional');
+        if (addRunBtn) addRunBtn.classList.remove('active');
+    }
+
     // Update button styles
-    const buttons = document.querySelectorAll('.goal-button');
+    const buttons = document.querySelectorAll('.goal-button:not(.optional)');
     buttons.forEach(button => button.classList.remove('active'));
 
     if (btn && btn.classList) {
@@ -470,6 +479,49 @@ function setTodayDate() {
     document.getElementById('nutrition-date').value = dateString;
     const fitnessInput = document.getElementById('fitness-date');
     if (fitnessInput) fitnessInput.value = dateString;
+}
+
+// Add function to update nutrition goals with additional run values.
+function addRunNutritionGoals() {
+    const button = document.querySelector('.goal-button.optional');
+    
+    if (runNutritionGoalsAdded) {
+        // Remove run nutrition goals
+        currentNutritionGoal.calories.recommended -= ADD_RUN_NUTRITION_GOALS.calories.add;
+        currentNutritionGoal.protein.recommended -= ADD_RUN_NUTRITION_GOALS.protein.add;
+        currentNutritionGoal.carbs.recommended -= ADD_RUN_NUTRITION_GOALS.carbs.add;
+        currentNutritionGoal.calories.maximum -= ADD_RUN_NUTRITION_GOALS.calories.add;
+        currentNutritionGoal.protein.maximum -= ADD_RUN_NUTRITION_GOALS.protein.add;
+        currentNutritionGoal.carbs.maximum -= ADD_RUN_NUTRITION_GOALS.carbs.add;
+        
+        runNutritionGoalsAdded = false;
+        button.classList.remove('active');
+    } else {
+        // Add run nutrition goals
+        currentNutritionGoal.calories.recommended += ADD_RUN_NUTRITION_GOALS.calories.add;
+        currentNutritionGoal.protein.recommended += ADD_RUN_NUTRITION_GOALS.protein.add;
+        currentNutritionGoal.carbs.recommended += ADD_RUN_NUTRITION_GOALS.carbs.add;
+        currentNutritionGoal.calories.maximum += ADD_RUN_NUTRITION_GOALS.calories.add;
+        currentNutritionGoal.protein.maximum += ADD_RUN_NUTRITION_GOALS.protein.add;
+        currentNutritionGoal.carbs.maximum += ADD_RUN_NUTRITION_GOALS.carbs.add;
+        
+        runNutritionGoalsAdded = true;
+        button.classList.add('active');
+    }
+    
+    // Refresh the nutrition display if it's currently showing
+    const displayEl = document.getElementById('nutrition-display');
+    if (displayEl && !displayEl.querySelector('.no-data')) {
+        // If we have nutrition data displayed, re-render it
+        const nutritionItems = displayEl.querySelectorAll('.nutrition-item');
+        if (nutritionItems.length > 0) {
+            // Trigger a refresh by clicking the load button
+            const nutritionForm = document.getElementById('nutrition-date-form');
+            if (nutritionForm) {
+                nutritionForm.dispatchEvent(new Event('submit'));
+            }
+        }
+    }
 }
 
 // Initialize

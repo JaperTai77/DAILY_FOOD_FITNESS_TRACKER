@@ -62,3 +62,15 @@ class FoodCatelog:
         except Exception as e:
             print(f"Failed to search for ID {id}: {e}")
             return []
+        
+    def search_all_food_products(self):
+        sql_query = text("""
+            SELECT * FROM [dbo].[FoodProductDetail]
+        """)
+        try:
+            with self.engine.connect() as conn:
+                result = conn.execute(sql_query)
+                return result.fetchall()
+        except Exception as e:
+            print(f"Failed to retrieve food products: {e}")
+            return []

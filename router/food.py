@@ -76,3 +76,26 @@ async def search_food_item_by_id(id: int):
         for row in results
     ]
     return JSONResponse(content=jsonable_encoder({"results": food_items}))
+
+@router.get("/searchallfooditems")
+async def search_all_food_items():
+    food_catalog = FoodCatelog()
+    results = food_catalog.search_all_food_products()
+    food_items = [
+        {
+            "ProductName": row.ProductName,
+            "ProductBrand": row.ProductBrand,
+            "Calories": row.Calories,
+            "Protein": row.Protein,
+            "Fat": row.Fat,
+            "SatFat": row.SatFat,
+            "Sodium": row.Sodium,
+            "Carbs": row.Carbs,
+            "Sugar": row.Sugar,
+            "AddedSugar": row.AddedSugar,
+            "PerServingGram": row.PerServingGram,
+            "Description": row.Description
+        }
+        for row in results
+    ]
+    return JSONResponse(content=jsonable_encoder({"results": food_items}))
