@@ -83,6 +83,7 @@ async def search_all_food_items():
     results = food_catalog.search_all_food_products()
     food_items = [
         {
+            "ProductID": row.ProductID,
             "ProductName": row.ProductName,
             "ProductBrand": row.ProductBrand,
             "Calories": row.Calories,

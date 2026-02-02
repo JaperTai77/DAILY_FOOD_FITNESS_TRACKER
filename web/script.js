@@ -88,8 +88,15 @@ function switchTab(tabName) {
 
 // Switch between food tabs (Custom / Catalog / Serving)
 function switchFoodTab(tabName) {
-    const tabButtons = document.querySelectorAll('.tracker-box:last-of-type .tab-button');
-    const tabPanes = document.querySelectorAll('.tracker-box:last-of-type .tab-pane');
+    // Get the Add Food Item box (the second tracker-box with id custom-tab, catalog-tab, serving-tab)
+    const addFoodBox = document.querySelector('.tracker-box:has(#custom-tab)');
+    if (!addFoodBox) {
+        console.error('Add Food Item box not found');
+        return;
+    }
+    
+    const tabButtons = addFoodBox.querySelectorAll('.tab-button');
+    const tabPanes = addFoodBox.querySelectorAll('.tab-pane');
     
     tabButtons.forEach(button => button.classList.remove('active'));
     tabPanes.forEach(pane => pane.classList.remove('active'));
@@ -523,6 +530,135 @@ function addRunNutritionGoals() {
         }
     }
 }
+
+// Switch between food management tabs
+function switchFoodManagementTab(tabName) {
+    // Get the Food Management box (the third tracker-box with id search-tab and add-tab)
+    const managementBox = document.querySelector('.tracker-box:has(#search-tab)');
+    if (!managementBox) {
+        console.error('Food Management box not found');
+        return;
+    }
+    
+    const tabButtons = managementBox.querySelectorAll('.tab-button');
+    const tabPanes = managementBox.querySelectorAll('.tab-pane');
+    
+    tabButtons.forEach(button => button.classList.remove('active'));
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    
+    if (tabName === 'search') {
+        tabButtons[0].classList.add('active');
+        document.getElementById('search-tab').classList.add('active');
+    } else if (tabName === 'add') {
+        tabButtons[1].classList.add('active');
+        document.getElementById('add-tab').classList.add('active');
+    }
+}
+
+// Search food items
+async function searchFoodItems() {
+    const searchBtn = document.querySelector('.btn-search');
+    searchBtn.disabled = true;
+    searchBtn.textContent = 'Searching...';
+    
+    try {
+        const response = await fetch(`${CONFIG.BACKEND_URL}/food/searchallfooditems`, {
+            method: 'GET',
+            headers: {
+                'accept': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.results && data.results.length > 0) {
+            displaySearchResults(data.results);
+        } else {
+            document.getElementById('search-results').innerHTML = '<p class="no-data">No food items found</p>';
+        }
+    } catch (error) {
+        console.error('Error searching food items:', error);
+        document.getElementById('search-results').innerHTML = '<p class="no-data">Error: ' + error.message + '</p>';
+    } finally {
+        searchBtn.disabled = false;
+        searchBtn.textContent = 'Search';
+    }
+}
+
+// Display search results in a table
+function displaySearchResults(results) {
+    let html = '<table class="search-results-table"><thead><tr>';
+    html += '<th>Product ID</th><th>Product Name</th><th>Brand</th><th>Calories</th><th>Protein (g)</th>';
+    html += '<th>Fat (g)</th><th>Carbs (g)</th><th>Per Serving (g)</th><th>Description</th>';
+    html += '</tr></thead><tbody>';
+    
+    results.forEach(item => {
+        html += `<tr>`;
+        html += `<td>${(item.ProductID || 0).toFixed(0)}</td>`;
+        html += `<td>${item.ProductName || 'N/A'}</td>`;
+        html += `<td>${item.ProductBrand || 'N/A'}</td>`;
+        html += `<td>${(item.Calories || 0).toFixed(1)}</td>`;
+        html += `<td>${(item.Protein || 0).toFixed(1)}</td>`;
+        html += `<td>${(item.Fat || 0).toFixed(1)}</td>`;
+        html += `<td>${(item.Carbs || 0).toFixed(1)}</td>`;
+        html += `<td>${(item.PerServingGram || 0).toFixed(1)}</td>`;
+        html += `<td>${item.Description || 'N/A'}</td>`;
+        html += `</tr>`;
+    });
+    
+    html += '</tbody></table>';
+    document.getElementById('search-results').innerHTML = html;
+}
+
+// Handle Add Food Form Submission
+document.getElementById('add-food-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const submitBtn = e.target.querySelector('.btn-submit');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Adding...';
+    
+    const data = {
+        ProductName: document.getElementById('add-productname').value,
+        ProductBrand: document.getElementById('add-productbrand').value,
+        PerServingGram: parseFloat(document.getElementById('add-perservinggram').value),
+        Calories: parseFloat(document.getElementById('add-calories').value),
+        Protein: parseFloat(document.getElementById('add-protein').value),
+        Fat: parseFloat(document.getElementById('add-fat').value),
+        SatFat: parseFloat(document.getElementById('add-satfat').value),
+        Sodium: parseFloat(document.getElementById('add-sodium').value),
+        Carbs: parseFloat(document.getElementById('add-carbs').value),
+        Sugar: parseFloat(document.getElementById('add-sugar').value),
+        AddedSugar: parseFloat(document.getElementById('add-addedsugar').value),
+        Description: document.getElementById('add-description').value || 'N/A'
+    };
+    
+    try {
+        const response = await fetch(`${CONFIG.BACKEND_URL}/food/addfooditem`, {
+            method: 'POST',
+            headers: {
+                'accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showMessage('add-food-message', result.message || 'Food item added successfully!', true);
+            e.target.reset();
+        } else {
+            showMessage('add-food-message', result.message || 'Failed to add food item', false);
+        }
+    } catch (error) {
+        console.error('Error adding food item:', error);
+        showMessage('add-food-message', 'Error: ' + error.message, false);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Add Food Item';
+    }
+});
 
 // Initialize
 updateDateTime();
