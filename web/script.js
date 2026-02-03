@@ -126,10 +126,18 @@ function setCurrentTime(inputId) {
     document.getElementById(inputId).value = dateTimeLocal;
 }
 
-// Convert datetime-local to ISO format
+// Convert datetime-local to local ISO format WITHOUT timezone (naive local datetime)
 function toISOString(dateTimeLocal) {
     const date = new Date(dateTimeLocal);
-    return date.toISOString();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+
+    // Return naive local datetime (no 'Z' or offset) so backend stores local time as-is
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 }
 
 // Show message
@@ -157,7 +165,7 @@ document.getElementById('custom-form').addEventListener('submit', async (e) => {
         Calories: parseFloat(document.getElementById('custom-calories').value),
         Protein: parseFloat(document.getElementById('custom-protein').value),
         Fat: parseFloat(document.getElementById('custom-fat').value),
-        TransFat: parseFloat(document.getElementById('custom-transfat').value),
+        SatFat: parseFloat(document.getElementById('custom-satfat').value),
         Sodium: parseFloat(document.getElementById('custom-sodium').value),
         Carbs: parseFloat(document.getElementById('custom-carbs').value),
         Sugar: parseFloat(document.getElementById('custom-sugar').value),
@@ -363,7 +371,7 @@ function displayNutritionData(data) {
         'TotalCalories': 'calories',
         'TotalProtein': 'protein',
         'TotalFat': 'fat',
-        'TotalTransFat': 'SatFat',
+        'TotalSatFat': 'SatFat',
         'TotalSodium': 'sodium',
         'TotalCarbs': 'carbs',
         'TotalSugar': 'sugar',
