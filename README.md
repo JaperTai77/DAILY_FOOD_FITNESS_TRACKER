@@ -177,10 +177,10 @@ Base URL (local): `http://localhost:8082`
 
 # Web Demo
 ### View daily nutrition intake
-![web1](readme_images\demo1.png)
+![web1](https://github.com/JaperTai77/DAILY_FOOD_FITNESS_TRACKER/blob/main/readme_images/demo1.png?raw=true)
 ### View daily food/meal
-![web1](readme_images\demo2.png)
+![web1](https://github.com/JaperTai77/DAILY_FOOD_FITNESS_TRACKER/blob/main/readme_images/demo2.png?raw=true)
 ### Add food/meal
-![web1](readme_images\demo3.png)
+![web1](https://github.com/JaperTai77/DAILY_FOOD_FITNESS_TRACKER/blob/main/readme_images/demo3.png?raw=true)
 ### Food catelog
-![web1](readme_images\demo4.png)
+![web1](https://github.com/JaperTai77/DAILY_FOOD_FITNESS_TRACKER/blob/main/readme_images/demo4.png?raw=true)
