@@ -173,3 +173,14 @@ Base URL (local): `http://localhost:8082`
 | POST | `/dailymeal/addmealitemfromfoodcatalogperserving` | Add meal item from Food Catalog (by servings) |
 | GET | `/dailymeal/calculatedailynutrition/{date}` | Get nutrition total for a date (`YYYY-MM-DD`) |
 | GET | `/dailymeal/getmealsbydate/{date}` | Get all meals for a date (`YYYY-MM-DD`) |
+
+
+# Web Demo
+### View daily nutrition intake
+![web1](readme_images\demo1.png)
+### View daily food/meal
+![web1](readme_images\demo2.png)
+### Add food/meal
+![web1](readme_images\demo3.png)
+### Food catelog
+![web1](readme_images\demo4.png)
