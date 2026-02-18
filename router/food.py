@@ -54,7 +54,7 @@ async def search_food_item(name: str):
     ]
     return JSONResponse(content=jsonable_encoder({"results": food_items}))
 
-@router.get("searchfooditemID/{id}")
+@router.get("/searchfooditemID/{id}")
 async def search_food_item_by_id(id: int):
     food_catalog = FoodCatelog()
     results = food_catalog.search_food_product_by_id(id=id)
